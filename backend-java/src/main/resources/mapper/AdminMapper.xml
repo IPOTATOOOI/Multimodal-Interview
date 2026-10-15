@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.spr_swcup.mapper.user.AdminMapper">
+    <insert id="insert" parameterType="com.example.spr_swcup.entity.Admin">
+        INSERT INTO admin(username, password, email, create_time, status, face_filename)
+        VALUES(#{username}, #{password}, #{email}, #{createTime}, #{status}, #{faceFilename})
+    </insert>
+
+    <select id="findByUsername" resultType="com.example.spr_swcup.entity.Admin">
+        SELECT id, username, password, email, create_time as createTime, status, face_filename as faceFilename FROM admin WHERE username = #{username}
+    </select>
+
+    <select id="findById" resultType="com.example.spr_swcup.entity.Admin">
+        SELECT id, username, password, email, create_time as createTime, status, face_filename as faceFilename FROM admin WHERE id = #{id}
+    </select>
+</mapper>

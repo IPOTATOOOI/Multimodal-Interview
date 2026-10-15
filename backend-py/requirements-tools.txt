@@ -1,0 +1,10 @@
+# Optional offline visualization and conversion utilities under vecDB/.
+-r requirements.txt
+gradio>=4.0.0
+plotly>=5.20.0
+umap-learn>=0.5.6
+reportlab>=4.0.0
+
+# The legacy Paddle extraction path in app/services/graph/predict_uie.py also
+# requires platform-specific paddlepaddle and paddlenlp packages. Install those
+# separately only if that optional fallback is needed.

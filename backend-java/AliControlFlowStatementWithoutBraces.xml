@@ -1,0 +1,28 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/util/SMUtils.java</file>
+  <line>39</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.util</package>
+  <entry_point TYPE="method" FQNAME="com.example.spr_swcup.util.SMUtils java.lang.String sm4Encrypt(java.lang.String content)" />
+  <problem_class id="AliControlFlowStatementWithoutBraces" severity="BLOCKER" attribute_key="ERRORS_ATTRIBUTES">在if/else/for/while/do语句中必须使用大括号，即使只有一行代码，避免使用下面的形式：if (condition) statements;</problem_class>
+  <description>&lt;code&gt;if&lt;/code&gt; 没有加大括号 #loc</description>
+  <highlighted_element>if</highlighted_element>
+  <language>JAVA</language>
+  <offset>8</offset>
+  <length>2</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/util/SMUtils.java</file>
+  <line>47</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.util</package>
+  <entry_point TYPE="method" FQNAME="com.example.spr_swcup.util.SMUtils java.lang.String sm4Decrypt(java.lang.String encryptedContent)" />
+  <problem_class id="AliControlFlowStatementWithoutBraces" severity="BLOCKER" attribute_key="ERRORS_ATTRIBUTES">在if/else/for/while/do语句中必须使用大括号，即使只有一行代码，避免使用下面的形式：if (condition) statements;</problem_class>
+  <description>&lt;code&gt;if&lt;/code&gt; 没有加大括号 #loc</description>
+  <highlighted_element>if</highlighted_element>
+  <language>JAVA</language>
+  <offset>8</offset>
+  <length>2</length>
+</problem>
+</problems>

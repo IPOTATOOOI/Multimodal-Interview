@@ -1,0 +1,77 @@
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.iml
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/*.log
+frontend/*.tsbuildinfo
+
+# Java
+backend-java/target/
+backend-java/.classpath
+backend-java/.project
+backend-java/.settings/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Runtime logs and user-generated content
+*.log
+backend-py/logs/
+backend-py/uploads/**
+!backend-py/uploads/.gitkeep
+backend-py/video/
+backend-py/video_temp/
+backend-py/facial_landmarks/img/
+backend-py/facial_landmarks/img-landmarks/
+backend-java/src/main/resources/uploads/**
+!backend-java/src/main/resources/uploads/.gitkeep
+
+# Local databases, vector indexes, caches and generated exports
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+backend-py/chroma_db/
+backend-py/SW_vector_db*/
+backend-py/vecDB/SW_vector_db*/
+backend-py/vecDB/paraphrase-multilingual-MiniLM-L12-v2/
+backend-py/vecDB/face_embeddings.sqlite3
+
+# Downloaded ML/CV model weights
+*.caffemodel
+*.dat
+*.onnx
+*.bin
+*.pt
+*.pth
+*.pdparams
+*.safetensors
+
+# Generated media and documents
+*.webm
+backend-py/uie_predictions.csv
+

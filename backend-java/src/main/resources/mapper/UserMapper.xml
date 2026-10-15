@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.spr_swcup.mapper.user.UserMapper">
+
+    <!-- 更新用户资料 -->
+    <update id="updateProfileByUsername" parameterType="com.example.spr_swcup.dto.userProfile.UserProfileDTO">
+        UPDATE user
+        SET
+            name = #{name},
+            gender = CASE
+                         WHEN #{gender} = '男' THEN 1
+                         WHEN #{gender} = '女' THEN 2
+                         ELSE 0
+                END,
+            age = #{age},
+            university = #{university},
+            major = #{major}
+        WHERE username = #{username}
+    </update>
+
+    <!-- 查询用户资料 -->
+    <select id="selectProfileByUsername" resultType="com.example.spr_swcup.dto.userProfile.UserProfileDTO">
+        SELECT
+            COALESCE(name, '') AS name,
+            CASE gender
+                WHEN 1 THEN '男'
+                WHEN 2 THEN '女'
+                ELSE ''
+                END AS gender,
+            COALESCE(age, 0) AS age,
+            COALESCE(university, '') AS university,
+            COALESCE(major, '') AS major
+        FROM user
+        WHERE username = #{username}
+    </select>
+
+</mapper>

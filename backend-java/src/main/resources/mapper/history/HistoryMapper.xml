@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.spr_swcup.mapper.history.HistoryMapper">
+    
+    <resultMap id="BasicHistoryResultMap" type="com.example.spr_swcup.dto.history.BasicHistoryDTO">
+        <id column="history_id" property="historyId"/>
+        <result column="interview_time" property="interviewTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="field" property="field"/>
+        <result column="position" property="position"/>
+        <result column="professional_knowledge" property="professionalKnowledge"/>
+        <result column="skill_match" property="skillMatch"/>
+        <result column="language_expression" property="languageExpression"/>
+        <result column="logical_thinking" property="logicalThinking"/>
+        <result column="innovation_ability" property="innovationAbility"/>
+        <result column="stress_resistance" property="stressResistance"/>
+        <result column="feedback_suggestion1" property="feedbackSuggestion1"/>
+        <result column="score" property="score"/>
+    </resultMap>
+    
+    <resultMap id="ImportHistoryResultMap" type="com.example.spr_swcup.dto.history.ImportHistoryDTO">
+        <id column="history_id" property="historyId"/>
+        <result column="user_id" property="userId"/>
+        <result column="interview_time" property="interviewTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="field" property="field"/>
+        <result column="position" property="position"/>
+        <result column="professional_knowledge" property="professionalKnowledge"/>
+        <result column="skill_match" property="skillMatch"/>
+        <result column="language_expression" property="languageExpression"/>
+        <result column="logical_thinking" property="logicalThinking"/>
+        <result column="innovation_ability" property="innovationAbility"/>
+        <result column="stress_resistance" property="stressResistance"/>
+        <result column="feedback_suggestion1" property="feedbackSuggestion1"/>
+        <result column="score" property="score"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+    
+    <insert id="insertInterviewHistory" parameterType="com.example.spr_swcup.dto.history.ImportHistoryDTO">
+        INSERT INTO interview_history (
+            history_id,
+            user_id,
+            interview_time,
+            end_time,
+            field,
+            position,
+            professional_knowledge,
+            skill_match,
+            language_expression,
+            logical_thinking,
+            innovation_ability,
+            stress_resistance,
+            feedback_suggestion1,
+            score,
+            created_at
+        ) VALUES (
+            #{historyId},
+            #{userId},
+            #{interviewTime},
+            #{endTime},
+            #{field},
+            #{position},
+            #{professionalKnowledge},
+            #{skillMatch},
+            #{languageExpression},
+            #{logicalThinking},
+            #{innovationAbility},
+            #{stressResistance},
+            #{feedbackSuggestion1},
+            #{score},
+            #{createdAt}
+        )
+    </insert>
+    
+    <select id="getUserInterviewHistory" resultMap="BasicHistoryResultMap">
+        SELECT 
+            history_id, 
+            interview_time, 
+            end_time, 
+            field, 
+            position, 
+            professional_knowledge, 
+            skill_match, 
+            language_expression, 
+            logical_thinking, 
+            innovation_ability, 
+            stress_resistance, 
+            feedback_suggestion1, 
+            score 
+        FROM interview_history 
+        WHERE user_id = #{userId} AND end_time IS NOT NULL
+        ORDER BY created_at ASC
+    </select>
+    
+    <resultMap id="DetailedHistoryResultMap" type="com.example.spr_swcup.dto.history.DetailedHistoryDTO">
+        <id column="history_id" property="historyId"/>
+        <result column="user_id" property="userId"/>
+        <result column="interview_time" property="interviewTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="field" property="field"/>
+        <result column="position" property="position"/>
+        <result column="professional_knowledge" property="professionalKnowledge"/>
+        <result column="skill_match" property="skillMatch"/>
+        <result column="language_expression" property="languageExpression"/>
+        <result column="logical_thinking" property="logicalThinking"/>
+        <result column="innovation_ability" property="innovationAbility"/>
+        <result column="stress_resistance" property="stressResistance"/>
+        <result column="feedback_suggestion1" property="feedbackSuggestion1"/>
+        <result column="feedback_suggestion2" property="feedbackSuggestion2"/>
+        <result column="feedback_suggestion3" property="feedbackSuggestion3"/>
+        <result column="html" property="html"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="score" property="score"/>
+    </resultMap>
+    
+    <select id="getInterviewHistoryById" resultMap="DetailedHistoryResultMap">
+        SELECT * FROM interview_history 
+        WHERE history_id = #{historyId}
+    </select>
+    
+    <resultMap id="QAResultMap" type="com.example.spr_swcup.dto.history.QADTO">
+        <id column="qa_id" property="qaId"/>
+        <result column="history_id" property="historyId"/>
+        <result column="role" property="role"/>
+        <result column="content" property="content"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="evaluation" property="evaluation"/>
+        <result column="feedback" property="feedback"/>
+        <result column="key_words" property="keyWords"/>
+        <result column="reference_a" property="referenceA"/>
+        <result column="difficulty" property="difficulty"/>
+        <result column="skill" property="skill"/>
+        <result column="answer_rating" property="answerRating"/>
+        <result column="category" property="category"/>
+    </resultMap>
+    
+    <select id="getQAByHistoryId" resultMap="QAResultMap">
+        SELECT * FROM qa 
+        WHERE history_id = #{historyId} 
+        ORDER BY created_at ASC
+    </select>
+    
+</mapper>

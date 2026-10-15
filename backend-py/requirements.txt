@@ -1,0 +1,61 @@
+# Web API
+fastapi==0.104.1
+uvicorn==0.23.2
+pydantic==2.5.2
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
+httpx>=0.27.0
+requests==2.31.0
+websocket-client==1.6.4
+websockets>=12.0
+watchdog==3.0.0
+
+# Authentication and security
+bcrypt>=4.1.2
+python-jose[cryptography]>=3.3.0
+cryptography>=42.0.0
+
+# Databases and queues
+pymysql==1.1.0
+mysql-connector-python==8.2.0
+neo4j==5.15.0
+py2neo>=2021.2.4
+redis>=5.0.1
+aio-pika>=9.4.0
+pika>=1.3.0
+
+# LLM, embeddings and retrieval
+openai>=1.30.0
+transformers==4.36.2
+sentence-transformers==2.7.0
+chromadb==1.1.1
+langchain==0.1.13
+langchain-community==0.0.29
+langchain-core==0.1.33
+
+# Documents and OCR
+python-docx==0.8.11
+openpyxl==3.1.2
+pdf2image>=1.17.0
+pdfminer.six==20221105
+Pillow>=10.0.0
+pytesseract==0.3.13
+rapidocr>=3.0.0
+onnxruntime>=1.17.0
+
+# Audio, image and graph analysis
+dlib==19.24.6
+opencv-python==4.8.1.78
+numpy==1.26.4
+imutils>=0.5.4
+librosa>=0.10.2
+openai-whisper>=20231117
+imageio-ffmpeg>=0.4.9
+networkx==3.1
+python-louvain==0.16
+scikit-learn>=1.4.0
+
+# Logging
+loguru==0.7.2
+

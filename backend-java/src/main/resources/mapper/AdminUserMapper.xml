@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.spr_swcup.mapper.user.AdminUserMapper">
+
+    <!-- 查询管理员资料 -->
+    <select id="selectAdminProfileByUsername" resultType="com.example.spr_swcup.dto.userProfile.UserProfileDTO">
+        SELECT
+            COALESCE(username, '') AS name,
+            '' AS gender,
+            0 AS age,
+            '' AS university,
+            '' AS major
+        FROM admin
+        WHERE username = #{username} AND status = 1
+    </select>
+
+</mapper>

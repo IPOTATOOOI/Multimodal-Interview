@@ -1,0 +1,31 @@
+<svg width="450" height="254" viewBox="0 0 450 254" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 水平网格线 -->
+  <path d="M0 35H450" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M0 75H450" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M0 115H450" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M0 155H450" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M0 195H450" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M0 235H450" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+
+  <!-- 垂直网格线 -->
+  <path d="M40 0V254" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M100 0V254" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M160 0V254" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M220 0V254" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M280 0V254" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M340 0V254" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+  <path d="M400 0V254" stroke="url(#gridGradient)" stroke-width="0.5" stroke-opacity="0.3"/>
+
+  <!-- 半透明矩形 -->
+  <rect x="180" y="50" width="60" height="65" fill="#B2B2B2" fill-opacity="0.08"/>
+  <rect x="320" y="150" width="45" height="55" fill="#B2B2B2" fill-opacity="0.08"/>
+  <rect x="70" y="180" width="55" height="50" fill="#B2B2B2" fill-opacity="0.08"/>
+
+  <!-- 渐变定义 -->
+  <defs>
+    <linearGradient id="gridGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#B2B2B2" />
+      <stop offset="100%" stop-color="#B2B2B2" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+</svg>

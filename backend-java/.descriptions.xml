@@ -1,0 +1,1389 @@
+<inspections profile="Project"><group name="Ali-Check" path=""><inspection shortName="AlibabaThreadPoolCreation" defaultSeverity="BLOCKER" displayName="线程池不允许使用Executors去创建，而是通过ThreadPoolExecutor的方式，这样的处理方式让写的同学更加明确线程池的运行规则，规避资源耗尽的风险。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;线程池不允许使用Executors去创建，而是通过ThreadPoolExecutor的方式，这样的处理方式让写的同学更加明确线程池的运行规则，规避资源耗尽的风险。&lt;br&gt;说明：Executors返回的线程池对象的弊端如下：
+1）FixedThreadPool和SingleThreadPool:
+  允许的请求队列长度为Integer.MAX_VALUE，可能会堆积大量的请求，从而导致OOM。
+2）CachedThreadPool:
+  允许的创建线程数量为Integer.MAX_VALUE，可能会创建大量的线程，从而导致OOM。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Positive example 1：
+    //org.apache.commons.lang3.concurrent.BasicThreadFactory
+    ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1,
+        new BasicThreadFactory.Builder().namingPattern(&amp;quot;example-schedule-pool-%d&amp;quot;).daemon(true).build());
+       
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example 2：
+    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+        .setNameFormat(&amp;quot;demo-pool-%d&amp;quot;).build();
+
+    //Common Thread Pool
+    ExecutorService pool = new ThreadPoolExecutor(5, 200,
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue&amp;lt;Runnable&amp;gt;(1024), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+
+    pool.execute(()-&amp;gt; System.out.println(Thread.currentThread().getName()));
+    pool.shutdown();//gracefully shutdown
+       
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example 3：
+    &amp;lt;bean id=&amp;quot;userThreadPool&amp;quot;
+        class=&amp;quot;org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor&amp;quot;&amp;gt;
+        &amp;lt;property name=&amp;quot;corePoolSize&amp;quot; value=&amp;quot;10&amp;quot; /&amp;gt;
+        &amp;lt;property name=&amp;quot;maxPoolSize&amp;quot; value=&amp;quot;100&amp;quot; /&amp;gt;
+        &amp;lt;property name=&amp;quot;queueCapacity&amp;quot; value=&amp;quot;2000&amp;quot; /&amp;gt;
+
+    &amp;lt;property name=&amp;quot;threadFactory&amp;quot; value= threadFactory /&amp;gt;
+        &amp;lt;property name=&amp;quot;rejectedExecutionHandler&amp;quot;&amp;gt;
+            &amp;lt;ref local=&amp;quot;rejectedExecutionHandler&amp;quot; /&amp;gt;
+        &amp;lt;/property&amp;gt;
+    &amp;lt;/bean&amp;gt;
+    //in code
+    userThreadPool.execute(thread);
+       
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidDoubleOrFloatEqualCompare" defaultSeverity="CRITICAL" displayName="浮点数之间的等值判断，基本数据类型不能用==来比较，包装数据类型不能用equals来判断。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;浮点数之间的等值判断，基本数据类型不能用==来比较，包装数据类型不能用equals来判断。&lt;br&gt;浮点数采用“尾数+阶码”的编码方式，类似于科学计数法的“有效数字+指数”的表示方式。二进制无法精确表示大部分的十进制小数，具体原理参考《码出高效》
+改进方式:
+1）指定一个误差范围，两个浮点数的差值在此范围之内，则认为是相等的
+    float a = 1.0f - 0.9f;
+    float b = 0.9f - 0.8f;
+    float diff = 1e-6f;
+
+    if (Math.abs(a - b) &amp;lt; diff) {
+        System.out.println(&amp;quot;true&amp;quot;);
+    }
+2) 使用BigDecimal来定义值，再进行浮点数的运算操作
+    BigDecimal a = new BigDecimal(&amp;quot;1.0&amp;quot;);
+    BigDecimal b = new BigDecimal(&amp;quot;0.9&amp;quot;);
+    BigDecimal c = new BigDecimal(&amp;quot;0.8&amp;quot;);
+
+    BigDecimal x = a.subtract(b);
+    BigDecimal y = b.subtract(c);
+
+    if (x.equals(y)) {
+        System.out.println(&amp;quot;true&amp;quot;);
+    }&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+        float g = 0.7f-0.6f;
+        float h = 0.8f-0.7f;
+        if (g == h) {
+            System.out.println(&amp;quot;true&amp;quot;);
+        }
+ 
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example:
+        double dis = 1e-6;
+        double d1 = 0.0000001d;
+        double d2 = 0d;
+        System.out.println(Math.abs(d1 - d2) &amp;lt; dis);
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaDontModifyInForeachCircle" defaultSeverity="BLOCKER" displayName="不要在foreach循环里进行元素的remove/add操作，remove元素请使用Iterator方式。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;不要在foreach循环里进行元素的remove/add操作，remove元素请使用Iterator方式。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+ Negative example:
+   List&amp;lt;String&amp;gt; originList = new ArrayList&amp;lt;String&amp;gt;();
+   originList.add(&amp;quot;22&amp;quot;);
+   for (String item : originList) {
+      //warn
+      list.add(&amp;quot;bb&amp;quot;);
+   }
+        
+        &lt;/pre&gt;
+&lt;pre&gt;            
+ Positive example:
+   Iterator&amp;lt;Integer&amp;gt; it=b.iterator();
+   while(it.hasNext()){
+      Integer temp =  it.next();
+      if (delCondition) {
+          it.remove();
+      }
+   }
+         
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaEqualsHashCode" defaultSeverity="WARNING" displayName="关于hashCode和equals的处理，遵循如下规则：
+                1） 只要覆写equals，就必须覆写hashCode。
+                2） 因为Set存储的是不重复的对象，依据hashCode和equals进行判断，所以Set存储的对象必须覆写这两个方法。
+                3） 如果自定义对象作为Map的键，那么必须覆写hashCode和equals。
+            说明：String已覆写hashCode和equals方法，所以我们可以愉快地使用String对象作为key来使用。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;关于hashCode和equals的处理，遵循如下规则：
+                1） 只要覆写equals，就必须覆写hashCode。
+                2） 因为Set存储的是不重复的对象，依据hashCode和equals进行判断，所以Set存储的对象必须覆写这两个方法。
+                3） 如果自定义对象作为Map的键，那么必须覆写hashCode和equals。
+            说明：String已覆写hashCode和equals方法，所以我们可以愉快地使用String对象作为key来使用。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    Positive example:
+        public class Foo {
+
+            @Override
+            public boolean equals(Object o) {
+                // ...
+            }
+
+            @Override
+            public int hashCode() {
+                // ...
+            }
+        }
+
+    Negative example 1:
+        public class Foo {
+
+            @Override
+            public boolean equals(Object o) {
+                // ...
+            }
+        }
+
+    Negative example 2:
+        public class Foo {
+
+            @Override
+            public int hashCode() {
+                // ...
+            }
+        }
+             
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaPojoMustUsePrimitiveField" defaultSeverity="MAJOR" displayName="关于基本数据类型与包装数据类型的使用标准如下：
+ 1） 所有的POJO类属性必须使用包装数据类型。
+ 2） RPC方法的返回值和参数必须使用包装数据类型。
+ 3） 所有的局部变量推荐使用基本数据类型。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;关于基本数据类型与包装数据类型的使用标准如下：
+ 1） 所有的POJO类属性必须使用包装数据类型。
+ 2） RPC方法的返回值和参数必须使用包装数据类型。
+ 3） 所有的局部变量推荐使用基本数据类型。&lt;br&gt;说明：POJO类属性没有初值是提醒使用者在需要使用时，必须自己显式地进行赋值，任何NPE问题，或者入库检查，都由使用者来保证。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public class DemoDO {
+        String str;
+        Integer a;
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidStartWithDollarAndUnderLineNaming" defaultSeverity="CRITICAL" displayName="所有编程相关的命名均不能以下划线或美元符号开始" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;所有编程相关的命名均不能以下划线或美元符号开始&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaEnumConstantsMustHaveComment" defaultSeverity="CRITICAL" displayName="所有的枚举类型字段必须要有注释，说明每个数据项的用途。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;所有的枚举类型字段必须要有注释，说明每个数据项的用途。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;    public enum TestEnum {
+        /**
+         * agree
+         */
+        agree(&amp;quot;agree&amp;quot;),
+        /**
+         * reject
+         */
+        reject(&amp;quot;reject&amp;quot;);
+        
+        private String action;
+    
+        TestEnum(String action) {
+            this.action = action;
+        }
+    
+        public String getAction() {
+            return action;
+        }
+    }
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidUseTimer" defaultSeverity="BLOCKER" displayName="多线程并行处理定时任务时，Timer运行多个TimeTask时，只要其中之一没有捕获抛出的异常，其它任务便会自动终止运行，使用ScheduledExecutorService则没有这个问题。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;多线程并行处理定时任务时，Timer运行多个TimeTask时，只要其中之一没有捕获抛出的异常，其它任务便会自动终止运行，使用ScheduledExecutorService则没有这个问题。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    //org.apache.commons.lang3.concurrent.BasicThreadFactory
+    ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1,
+        new BasicThreadFactory.Builder().namingPattern(&amp;quot;example-schedule-pool-%d&amp;quot;).daemon(true).build());
+    executorService.scheduleAtFixedRate(new Runnable() {
+        @Override
+        public void run() {
+            //do something
+        }
+    },initialDelay,period, TimeUnit.HOURS);
+       
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AliAccessStaticViaInstance" defaultSeverity="BLOCKER" displayName="避免通过一个类的对象引用访问此类的静态变量或静态方法，无谓增加编译器解析成本，直接用类名来访问即可。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+避免通过一个类的对象引用访问此类的静态变量或静态方法，无谓增加编译器解析成本，直接用类名来访问即可。
+&lt;/body&gt;
+&lt;/html&gt;</inspection><inspection shortName="AlibabaAvoidComplexCondition" defaultSeverity="MAJOR" displayName="除常用方法（如getXxx/isXxx）等外，不要在条件判断中执行复杂的语句，将复杂逻辑判断的结果赋值给一个有意义的布尔变量，以提高可读性。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;除常用方法（如getXxx/isXxx）等外，不要在条件判断中执行复杂的语句，将复杂逻辑判断的结果赋值给一个有意义的布尔变量，以提高可读性。&lt;br&gt;说明：很多if语句内的逻辑相当复杂，阅读者需要分析条件表达式的最终结果，才能明确什么样的条件执行什么样的语句，那么，如果阅读者分析逻辑表达式错误呢？&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+    if ((file.open(fileName, &amp;quot;w&amp;quot;) != null) &amp;amp;&amp;amp; (...) || (...)) {
+        // ...
+    }
+			
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example:
+    boolean existed = (file.open(fileName, &amp;quot;w&amp;quot;) != null) &amp;amp;&amp;amp; (...) || (...);
+    if (existed) {
+        //...
+    }
+			
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaMethodTooLong" defaultSeverity="MAJOR" displayName="单个方法的总行数不超过80行。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;单个方法的总行数不超过80行。&lt;br&gt;说明：除注释之外的方法签名、结束右大括号、方法内代码、空行、回车及任何不可见字符的总行数不超过80行。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaLockShouldWithTryFinally" defaultSeverity="BLOCKER" displayName="在使用阻塞等待获取锁的方式中，必须在try代码块之外，并且在加锁方法与try代码块之间没有任何可能抛出异常的方法调用，避免加锁成功后，在finally中无法解锁。
+说明一：如果在lock方法与try代码块之间的方法调用抛出异常，那么无法解锁，造成其它线程无法成功获取锁。
+说明二：如果lock方法在try代码块之内，可能由于其它方法抛出异常，导致在finally代码块中，unlock对未加锁的对象解锁，它会调用AQS的tryRelease方法（取决于具体实现类），抛出IllegalMonitorStateException异常。
+说明三：在Lock对象的lock方法实现中可能抛出unchecked异常，产生的后果与说明二相同。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;在使用阻塞等待获取锁的方式中，必须在try代码块之外，并且在加锁方法与try代码块之间没有任何可能抛出异常的方法调用，避免加锁成功后，在finally中无法解锁。
+说明一：如果在lock方法与try代码块之间的方法调用抛出异常，那么无法解锁，造成其它线程无法成功获取锁。
+说明二：如果lock方法在try代码块之内，可能由于其它方法抛出异常，导致在finally代码块中，unlock对未加锁的对象解锁，它会调用AQS的tryRelease方法（取决于具体实现类），抛出IllegalMonitorStateException异常。
+说明三：在Lock对象的lock方法实现中可能抛出unchecked异常，产生的后果与说明二相同。&lt;br&gt;java.concurrent.LockShouldWithTryFinallyRule.rule.desc&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Positive example：
+    Lock lock = new XxxLock();
+    // ...
+    lock.lock();
+    try {
+        doSomething();
+        doOthers();
+    } finally {
+        lock.unlock();
+    }
+        
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Negative example：
+    Lock lock = new XxxLock();
+    // ...
+    try {
+        // If an exception is thrown here, the finally block is executed directly
+        doSomething();
+        // The finally block executes regardless of whether the lock is successful or not
+        lock.lock();
+        doOthers();
+
+    } finally {
+        lock.unlock();
+    }
+        
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaConcurrentExceptionWithModifyOriginSubList" defaultSeverity="CRITICAL" displayName="在subList场景中，高度注意对原列表的修改，会导致子列表的遍历、增加、删除均产生ConcurrentModificationException异常。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;在subList场景中，高度注意对原列表的修改，会导致子列表的遍历、增加、删除均产生ConcurrentModificationException异常。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+   List&amp;lt;String&amp;gt; originList = new ArrayList&amp;lt;String&amp;gt;();
+   originList.add(&amp;quot;22&amp;quot;);
+   List&amp;lt;String&amp;gt; subList = originList.subList(0, 1);
+   //warn
+   originList.add(&amp;quot;22&amp;quot;);
+       
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaUndefineMagicConstant" defaultSeverity="MAJOR" displayName="不允许任何魔法值（即未经定义的常量）直接出现在代码中。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;不允许任何魔法值（即未经定义的常量）直接出现在代码中。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;        
+Negative example:
+    //Magic values, except for predefined, are forbidden in coding.
+    if (key.equals(&amp;quot;Id#taobao_1&amp;quot;)) {
+            //...
+    }
+         
+        &lt;/pre&gt;
+&lt;pre&gt;        
+Positive example:
+    String KEY_PRE = &amp;quot;Id#taobao_1&amp;quot;;
+    if (KEY_PRE.equals(key)) {
+            //...
+    }
+      
+      &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaBigDecimalAvoidDoubleConstructor" defaultSeverity="MAJOR" displayName="禁止使用构造方法BigDecimal(double)的方式把double值转化为BigDecimal对象" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;禁止使用构造方法BigDecimal(double)的方式把double值转化为BigDecimal对象&lt;br&gt;说明：BigDecimal(double)存在精度损失风险，在精确计算或值比较的场景中可能会导致业务逻辑异常。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+    BigDecimal good1 = new BigDecimal(0.1);
+
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example:
+    BigDecimal good1 = new BigDecimal(&amp;quot;0.1&amp;quot;);
+    BigDecimal good2 = BigDecimal.valueOf(0.1);
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaCollectionInitShouldAssignCapacity" defaultSeverity="MAJOR" displayName="集合初始化时，指定集合初始值大小。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;集合初始化时，指定集合初始值大小。&lt;br&gt;说明：HashMap使用如下构造方法进行初始化，如果暂时无法确定集合大小，那么指定默认值（16）即可。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+ Negative example:
+   Map&amp;lt;String, String&amp;gt; map = new HashMap&amp;lt;String, String&amp;gt;();
+
+        
+        &lt;/pre&gt;
+&lt;pre&gt;            
+ Positive example:
+   Map&amp;lt;String, String&amp;gt; map = new HashMap&amp;lt;String, String&amp;gt;(16);
+         
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidMissUseOfMathRandom" defaultSeverity="MAJOR" displayName="注意 Math.random() 这个方法返回是double类型，注意取值的范围[0,1)（能够取到零值，注意除零异常），如果想获取整数类型的随机数，不要将x放大10的若干倍然后取整，直接使用Random对象的nextInt或者nextLong方法。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;注意 Math.random() 这个方法返回是double类型，注意取值的范围[0,1)（能够取到零值，注意除零异常），如果想获取整数类型的随机数，不要将x放大10的若干倍然后取整，直接使用Random对象的nextInt或者nextLong方法。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;Negative example:
+    Long randomLong =(long) (Math.random() * 10);
+
+        &lt;/pre&gt;
+&lt;pre&gt;Positive example:
+    Long randomLong = new Random().nextLong();
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAbstractMethodOrInterfaceMethodMustUseJavadoc" defaultSeverity="MAJOR" displayName="所有的抽象方法（包括接口中的方法）必须要用javadoc注释、除了返回值、参数、异常说明外，还必须指出该方法做什么事情，实现什么功能。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;所有的抽象方法（包括接口中的方法）必须要用javadoc注释、除了返回值、参数、异常说明外，还必须指出该方法做什么事情，实现什么功能。&lt;br&gt;说明：如有实现和调用注意事项，请一并说明。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;    /**
+     * fetch data by rule id
+     * 
+     * @param ruleId rule id
+     * @param page page number
+     * @param jsonContext json format context
+     * @return Result&amp;lt;XxxxDO&amp;gt;
+     */
+    Result&amp;lt;XxxxDO&amp;gt; fetchDataByRuleId(Long ruleId, Integer page, String jsonContext);
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AliArrayNamingShouldHaveBracket" defaultSeverity="MAJOR" displayName="中括号是数组类型的一部分，数组定义如下：String[] args" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;中括号是数组类型的一部分，数组定义如下：String[] args&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    String[] a = new String[3];
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaClassNamingShouldBeCamel" defaultSeverity="MAJOR" displayName="类名使用UpperCamelCase风格，必须遵从驼峰形式，但以下情形例外：（领域模型的相关命名）DO / BO / DTO / VO / DAO" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;类名使用UpperCamelCase风格，必须遵从驼峰形式，但以下情形例外：（领域模型的相关命名）DO / BO / DTO / VO / DAO&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaCountDownShouldInFinally" defaultSeverity="MAJOR" displayName="使用CountDownLatch进行异步转同步操作，每个线程退出前必须调用countDown方法，线程执行代码注意catch异常，确保countDown方法可以执行，避免主线程无法执行至await方法，直到超时才返回结果。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;使用CountDownLatch进行异步转同步操作，每个线程退出前必须调用countDown方法，线程执行代码注意catch异常，确保countDown方法可以执行，避免主线程无法执行至await方法，直到超时才返回结果。&lt;br&gt;说明：注意，子线程抛出异常堆栈，不能在主线程try-catch到。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    /**
+     * @author caikang
+     * @date 2017/04/07
+     */
+    public class CountDownExample {
+        public void operate(CountDownLatch countDownLatch){
+            try{
+                System.out.println(&amp;quot;business logic&amp;quot;);
+            }catch (RuntimeException e){
+                // do something
+            }finally {
+                countDownLatch.countDown();
+            }
+        }
+    }
+        
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaClassCastExceptionWithToArray" defaultSeverity="CRITICAL" displayName="使用集合转数组的方法，必须使用集合的toArray(T[] array)，传入的是类型完全一样的数组，大小就是list.size()" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;使用集合转数组的方法，必须使用集合的toArray(T[] array)，传入的是类型完全一样的数组，大小就是list.size()&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+   Integer[] a = (Integer [])c.toArray();
+        
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example：
+   Integer[] b = (Integer [])c.toArray(new Integer[c.size()]);
+         
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaSneakyThrowsWithoutExceptionType" defaultSeverity="CRITICAL" displayName="使用lombok.SneakyThrows时必须显示声明抛出的异常类型。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;使用lombok.SneakyThrows时必须显示声明抛出的异常类型。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    Positive example:
+        import lombok.SneakyThrows;
+        import org.apache.commons.io.FileUtils;
+
+        import java.io.File;
+        import java.io.IOException;
+        import java.nio.charset.StandardCharsets;
+        import java.util.function.Function;
+
+        public class FileReadFunction implements Function&amp;lt;File, Object&amp;gt; {
+
+            @SneakyThrows(value = {IOException.class})
+            @Override
+            public Object apply(File file) {
+                return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+            }
+
+        }
+
+    Negative example:
+        import lombok.SneakyThrows;
+        import org.apache.commons.io.FileUtils;
+
+        import java.io.File;
+        import java.io.IOException;
+        import java.nio.charset.StandardCharsets;
+        import java.util.function.Function;
+
+        public class FileReadFunction implements Function&amp;lt;File, Object&amp;gt; {
+
+            @SneakyThrows
+            @Override
+            public Object apply(File file) {
+                return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+            }
+
+        }
+             
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaCommentsMustBeJavadocFormat" defaultSeverity="MAJOR" displayName="类、类属性、类方法的注释必须使用javadoc规范，使用/**内容*/格式，不得使用//xxx方式和/*xxx*/方式。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;类、类属性、类方法的注释必须使用javadoc规范，使用/**内容*/格式，不得使用//xxx方式和/*xxx*/方式。&lt;br&gt;说明：在IDE编辑窗口中，javadoc方式会提示相关注释，生成javadoc可以正确输出相应注释；在IDE中，工程调用方法时，不进入方法即可悬浮提示方法、参数、返回值的意义，提高阅读效率。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;    /**
+     * 
+     * XXX class function description.
+     *
+     */
+    public class XxClass implements Serializable {
+        private static final long serialVersionUID = 113323427779853001L;
+        /**
+         * id
+         */
+        private Long id;
+        /**
+         * title
+         */
+        private String title;
+    
+        /**
+         * find by id
+         * 
+         * @param ruleId rule id
+         * @param page start from 1
+         * @return Result&amp;lt;Xxxx&amp;gt;
+         */
+        public Result&amp;lt;Xxxx&amp;gt; funcA(Long ruleId, Integer page) {
+            return null;
+        }
+    }
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidNewDateGetTime" defaultSeverity="BLOCKER" displayName="获取当前毫秒数：System.currentTimeMillis(); 而不是new Date().getTime();" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;获取当前毫秒数：System.currentTimeMillis(); 而不是new Date().getTime();&lt;br&gt;说明：如果想获取更加精确的纳秒级时间值，用System.nanoTime。在JDK8中，针对统计时间等场景，推荐使用Instant类。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;    public class TimeMillisDemo {
+        public static void main(String args[]) {
+            // Positive example:
+            long a = System.currentTimeMillis();
+            // Negative example:
+            long b = new Date().getTime();
+
+            System.out.println(a);
+            System.out.println(b);
+        }
+    }
+
+      &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidReturnInFinally" defaultSeverity="CRITICAL" displayName="不能在finally块中使用return，finally块中的return返回后方法结束执行，不会再执行try块中的return语句。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;不能在finally块中使用return，finally块中的return返回后方法结束执行，不会再执行try块中的return语句。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+    public static Long readFileLength(String fileName) {
+        try {
+            File file = new File(fileName);
+            RandomAccessFile randomAccessFile = new RandomAccessFile(file, &amp;quot;r&amp;quot;);
+            return randomAccessFile.length();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            countDownLatch.countDown();
+            return 0L;
+        }
+    }
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AliWrapperTypeEquality" defaultSeverity="BLOCKER" displayName="所有的包装类对象之间值的比较，全部使用equals方法比较。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;所有的包装类对象之间值的比较，全部使用equals方法比较。&lt;br&gt;说明：对于Integer var=?在-128至127之间的赋值，Integer对象是在IntegerCache.cache产生，会复用已有对象，这个区间内的Integer值可以直接使用==进行判断，但是这个区间之外的所有数据，都会在堆上产生，并不会复用已有对象，这是一个大坑，推荐使用equals方法进行判断。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    Integer a = 235;
+    Integer b = 235;
+    if (a.equals(b)) {
+        // code
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaTestClassShouldEndWithTestNaming" defaultSeverity="MAJOR" displayName="测试类命名以它要测试的类的名称开始，以Test结尾" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;测试类命名以它要测试的类的名称开始，以Test结尾&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public class DemoTest {
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaSwitchStatement" defaultSeverity="CRITICAL" displayName="在一个switch块内，每个case要么通过break/return等来终止，要么注释说明程序将继续执行到哪一个case为止；在一个switch块内，都必须包含一个default语句并且放在最后，即使它什么代码也没有。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;在一个switch块内，每个case要么通过break/return等来终止，要么注释说明程序将继续执行到哪一个case为止；在一个switch块内，都必须包含一个default语句并且放在最后，即使它什么代码也没有。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    switch (x) {
+        case 1:
+            break;
+        case 2:
+            break;
+        default:
+    }
+			
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaBooleanPropertyShouldNotStartWithIs" defaultSeverity="CRITICAL" displayName="POJO类中的任何布尔类型的变量，都不要加is，否则部分框架解析会引起序列化错误" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;POJO类中的任何布尔类型的变量，都不要加is，否则部分框架解析会引起序列化错误&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public class DemoDO{
+        Boolean success;
+        Boolean delete;
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AliMissingOverrideAnnotation" defaultSeverity="BLOCKER" displayName="所有的覆写方法，必须加@Override注解。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+所有的覆写方法，必须加@Override注解。&lt;br&gt;
+反例：getObject()与get0bject()的问题。一个是字母的O，一个是数字的0，加@Override可以准确判断是否覆盖成功。另外，如果在抽象类中对方法签名进行修改，其实现类会马上编译报错。
+&lt;/body&gt;
+&lt;/html&gt;</inspection><inspection shortName="AlibabaMethodReturnWrapperType" defaultSeverity="MAJOR" displayName="返回类型为基本数据类型，return包装数据类型的对象时，自动拆箱有可能产生NPE" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;返回类型为基本数据类型，return包装数据类型的对象时，自动拆箱有可能产生NPE&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public int method() {
+        Integer a = null;
+        return a;
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AliDeprecation" defaultSeverity="CRITICAL" displayName="不能使用过时的类或方法。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+不能使用过时的类或方法。&lt;br&gt;
+说明：java.net.URLDecoder 中的方法decode(String encodeStr) 这个方法已经过时，应该使用双参数decode(String source, String encode)。接口提供方既然明确是过时接口，那么有义务同时提供新的接口；作为调用方来说，有义务去考证过时方法的新实现是什么。
+&lt;/body&gt;
+&lt;/html&gt;</inspection><inspection shortName="AlibabaAvoidPatternCompileInMethod" defaultSeverity="BLOCKER" displayName="在使用正则表达式时，利用好其预编译功能，可以有效加快正则匹配速度。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;在使用正则表达式时，利用好其预编译功能，可以有效加快正则匹配速度。&lt;br&gt;说明：不要在方法体内定义：Pattern pattern = Pattern.compile(规则);&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;    public class XxxClass {
+        // Use precompile
+        private static Pattern NUMBER_PATTERN = Pattern.compile(&amp;quot;[0-9]+&amp;quot;);
+        public Pattern getNumberPattern() {
+            // Avoid use Pattern.compile in method body.
+            Pattern localPattern = Pattern.compile(&amp;quot;[0-9]+&amp;quot;);
+            return localPattern;
+        }
+    }
+
+      &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaRemoveCommentedCode" defaultSeverity="MAJOR" displayName="及时清理不再使用的代码段或配置信息。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;及时清理不再使用的代码段或配置信息。&lt;br&gt;说明：对于垃圾代码或过时配置，坚决清理干净，避免程序过度臃肿，代码冗余。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;Positive example: For codes which are temporarily removed and likely to be reused, use /// to add a reasonable note.
+ public static void hello() {
+    /// Business is stopped temporarily by the owner.
+    // Business business = new Business();
+    // business.active();
+    System.out.println(&amp;quot;it&amp;#39;s finished&amp;quot;);
+}
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidNegationOperator" defaultSeverity="MAJOR" displayName="避免采用取反逻辑运算符。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;避免采用取反逻辑运算符。&lt;br&gt;说明: 取反逻辑不利于快速理解，并且取反逻辑写法必然存在对应的正向逻辑写法。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+    // Use `if (!(x &amp;gt;= 628))` to represent that x is less than 628.
+    if (!(x &amp;gt;= 628)) {
+        // ...
+    }
+			
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example:
+    // Use `if (x &amp;lt; 628)` to represent that x is less than 628.
+    if (x &amp;lt; 628)) {
+        // ...
+    }
+			
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="MapOrSetKeyShouldOverrideHashCodeEquals" defaultSeverity="CRITICAL" displayName="Map/Set的key为自定义对象时，必须重写hashCode和equals。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+Map/Set的key为自定义对象时，必须重写hashCode和equals。&lt;br&gt;
+关于hashCode和equals的处理，遵循如下规则：&lt;br/&gt;
+ 1） 只要重写equals，就必须重写hashCode。&lt;br/&gt;
+ 2） 因为Set存储的是不重复的对象，依据hashCode和equals进行判断，所以Set存储的对象必须重写这两个方法。&lt;br/&gt;
+ 3） 如果自定义对象做为Map的键，那么必须重写hashCode和equals。&lt;br/&gt;
+&lt;/body&gt;
+&lt;/html&gt;</inspection><inspection shortName="AlibabaThreadLocalShouldRemove" defaultSeverity="CRITICAL" displayName="必须回收自定义的ThreadLocal变量，尤其在线程池场景下，线程经常会被复用，如果不清理自定义的 ThreadLocal变量，可能会影响后续业务逻辑和造成内存泄露等问题。尽量在代理中使用try-finally块进行回收。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;必须回收自定义的ThreadLocal变量，尤其在线程池场景下，线程经常会被复用，如果不清理自定义的 ThreadLocal变量，可能会影响后续业务逻辑和造成内存泄露等问题。尽量在代理中使用try-finally块进行回收。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    /**
+     * @author caikang
+     * @date 2017/04/07
+     */
+    public class UserHolder {
+        private static final ThreadLocal&amp;lt;User&amp;gt; userThreadLocal = new ThreadLocal&amp;lt;User&amp;gt;();
+
+        public static void set(User user){
+            userThreadLocal.set(user);
+        }
+
+        public static User get(){
+            return userThreadLocal.get();
+        }
+
+        public static void remove(){
+            userThreadLocal.remove();
+        }
+    }
+
+    /**
+     * @author caikang
+     * @date 2017/04/07
+     */
+    public class UserInterceptor extends HandlerInterceptorAdapter {
+        @Override
+        public boolean preHandle(HttpServletRequest request,
+            HttpServletResponse response, Object handler) throws Exception {
+            UserHolder.set(new User());
+            return true;
+        }
+
+        @Override
+        public void afterCompletion(HttpServletRequest request,
+            HttpServletResponse response, Object handler, Exception ex) throws Exception {
+            UserHolder.remove();
+        }
+    }
+        
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaServiceOrDaoClassShouldEndWithImpl" defaultSeverity="CRITICAL" displayName="对于Service和DAO类，基于SOA的理念，暴露出来的服务一定是接口，内部的实现类用Impl的后缀与接口区别" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;对于Service和DAO类，基于SOA的理念，暴露出来的服务一定是接口，内部的实现类用Impl的后缀与接口区别&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public interface DemoService{
+        void f();
+    }
+
+    public class DemoServiceImpl implements DemoService {
+        @Override
+        public void f(){
+            System.out.println(&amp;quot;hello world&amp;quot;);
+        }
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaExceptionClassShouldEndWithException" defaultSeverity="CRITICAL" displayName="异常类命名使用Exception结尾" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;异常类命名使用Exception结尾&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public class CacheDemoException extends Exception{
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidManuallyCreateThread" defaultSeverity="CRITICAL" displayName="线程资源必须通过线程池提供，不允许在应用中自行显式创建线程。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;线程资源必须通过线程池提供，不允许在应用中自行显式创建线程。&lt;br&gt;说明：使用线程池的好处是减少在创建和销毁线程上所花的时间以及系统资源的开销，解决资源不足的问题。如果不使用线程池，有可能造成系统创建大量同类线程而导致消耗完内存或者“过度切换”的问题。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+        .setNameFormat(&amp;quot;demo-pool-%d&amp;quot;).build();
+    ExecutorService singleThreadPool = new ThreadPoolExecutor(1, 1,
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue&amp;lt;Runnable&amp;gt;(1024), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+
+    singleThreadPool.execute(()-&amp;gt; System.out.println(Thread.currentThread().getName()));
+    singleThreadPool.shutdown();
+    
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AliLongLiteralsEndingWithLowercaseL" defaultSeverity="BLOCKER" displayName="long或者Long初始赋值时，必须使用大写的L，不能是小写的l，小写容易跟数字1混淆，造成误解。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;long或者Long初始赋值时，必须使用大写的L，不能是小写的l，小写容易跟数字1混淆，造成误解。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;      
+Negative example:
+    //It is hard to tell whether it is number 11 or Long 1.
+    Long warn = 1l;
+       
+        &lt;/pre&gt;
+&lt;pre&gt;        
+Positive example:
+    Long notwarn = 1L;
+        
+         &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaPojoMustOverrideToString" defaultSeverity="MAJOR" displayName="POJO类必须写toString方法。使用工具类source&gt; generate toString时，如果继承了另一个POJO类，注意在前面加一下super.toString。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;POJO类必须写toString方法。使用工具类source&amp;gt; generate toString时，如果继承了另一个POJO类，注意在前面加一下super.toString。&lt;br&gt;说明：在方法执行抛出异常时，可以直接调用POJO的toString()方法打印其属性值，便于排查问题。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public class ToStringDemo extends Super{
+        private String secondName;
+
+        @Override
+        public String toString() {
+            return super.toString() + &amp;quot;ToStringDemo{&amp;quot; + &amp;quot;secondName=&amp;#39;&amp;quot; + secondName + &amp;#39;\&amp;#39;&amp;#39; + &amp;#39;}&amp;#39;;
+        }
+    }
+
+    class Super {
+        private String firstName;
+
+        @Override
+        public String toString() {
+            return &amp;quot;Super{&amp;quot; + &amp;quot;firstName=&amp;quot; + firstName + &amp;#39;\&amp;#39;&amp;#39; + &amp;#39;}&amp;#39;;
+        }
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidCallStaticSimpleDateFormat" defaultSeverity="CRITICAL" displayName="SimpleDateFormat 是线程不安全的类，一般不要定义为static变量，如果定义为static，必须加锁，或者使用DateUtils工具类。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;SimpleDateFormat 是线程不安全的类，一般不要定义为static变量，如果定义为static，必须加锁，或者使用DateUtils工具类。&lt;br&gt;说明：如果是JDK8的应用，可以使用instant代替Date，LocalDateTime代替Calendar，DateTimeFormatter代替SimpleDateFormat，官方给出的解释：simple beautiful strong immutable thread-safe。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Positive example 1：
+    private static final String FORMAT = &amp;quot;yyyy-MM-dd HH:mm:ss&amp;quot;;
+    public String getFormat(Date date){
+        SimpleDateFormat dateFormat = new SimpleDateFormat(FORMAT);
+        return sdf.format(date);
+    }
+        
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example 2：
+    private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat(&amp;quot;yyyy-MM-dd HH:mm:ss&amp;quot;);
+    public void getFormat(){
+        synchronized (sdf){
+        sdf.format(new Date());
+        ….;
+    }
+        
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example 3：
+    private static final ThreadLocal&amp;lt;DateFormat&amp;gt; DATE_FORMATTER = new ThreadLocal&amp;lt;DateFormat&amp;gt;() {
+        @Override
+        protected DateFormat initialValue() {
+            return new SimpleDateFormat(&amp;quot;yyyy-MM-dd&amp;quot;);
+        }
+    };
+        
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAbstractClassShouldStartWithAbstractNaming" defaultSeverity="CRITICAL" displayName="抽象类命名使用Abstract或Base开头" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;抽象类命名使用Abstract或Base开头&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    abstract class BaseControllerDemo{
+    }
+
+    abstract class AbstractActionDemo{
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidConcurrentCompetitionRandom" defaultSeverity="MAJOR" displayName="避免Random实例被多线程使用，虽然共享该实例是线程安全的，但会因竞争同一seed 导致的性能下降。说明：Random实例包括java.util.Random 的实例或者 Math.random()的方式。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;避免Random实例被多线程使用，虽然共享该实例是线程安全的，但会因竞争同一seed 导致的性能下降。说明：Random实例包括java.util.Random 的实例或者 Math.random()的方式。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Positive example 1：
+    /**
+     * @author caikang
+     * @date 2017/04/07
+     */
+    public class RandomInThread extends Thread {
+        private Random random = new Random();
+
+        @Override
+        public void run() {
+            long t = random.nextLong();
+        }
+    }
+        
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example 2：
+    /**
+     * @author caikang
+     * @date 2017/04/07
+     */
+    public class RandomInThread extends Thread {
+        private Random random = ThreadLocalRandom.current();
+
+        @Override
+        public void run() {
+            long t = random.nextLong();
+        }
+    }
+        
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaPackageNaming" defaultSeverity="MAJOR" displayName="包名统一使用小写，点分隔符之间有且仅有一个自然语义的英语单词。包名统一使用单数形式，但是类名如果有复数含义，类名可以使用复数形式" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;包名统一使用小写，点分隔符之间有且仅有一个自然语义的英语单词。包名统一使用单数形式，但是类名如果有复数含义，类名可以使用复数形式&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    com.alibaba.mpp.util / com.taobao.tddl.domain.dto
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaStringConcat" defaultSeverity="MAJOR" displayName="循环体内，字符串的联接方式，使用StringBuilder的append方法进行扩展。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;循环体内，字符串的联接方式，使用StringBuilder的append方法进行扩展。&lt;br&gt;说明：反编译出的字节码文件显示每次循环都会new出一个StringBuilder对象，然后进行append操作，最后通过toString方法返回String对象，造成内存资源浪费。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+    String result;
+    for (String string : tagNameList) {
+        result = result + string;
+    }
+
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example:
+    StringBuilder stringBuilder = new StringBuilder();
+    for (String string : tagNameList) {
+        stringBuilder.append(string);
+    }
+    String result = stringBuilder.toString();
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaPojoNoDefaultValue" defaultSeverity="MAJOR" displayName="定义DO/DTO/VO等POJO类时，不要加任何属性默认值。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;定义DO/DTO/VO等POJO类时，不要加任何属性默认值。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public class DemoDO {
+        String str;
+        Integer a;
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaThreadShouldSetName" defaultSeverity="CRITICAL" displayName="创建线程或线程池时请指定有意义的线程名称，方便出错时回溯。创建线程池的时候请使用带ThreadFactory的构造函数，并且提供自定义ThreadFactory实现或者使用第三方实现。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;创建线程或线程池时请指定有意义的线程名称，方便出错时回溯。创建线程池的时候请使用带ThreadFactory的构造函数，并且提供自定义ThreadFactory实现或者使用第三方实现。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+        .setNameFormat(&amp;quot;demo-pool-%d&amp;quot;).build();
+    ExecutorService singleThreadPool = new ThreadPoolExecutor(1, 1,
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue&amp;lt;Runnable&amp;gt;(1024), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+
+    singleThreadPool.execute(()-&amp;gt; System.out.println(Thread.currentThread().getName()));
+    singleThreadPool.shutdown();
+    
+        &lt;/pre&gt;
+&lt;pre&gt;            
+    public class TimerTaskThread extends Thread {
+        public TimerTaskThread(){
+        super.setName(&amp;quot;TimerTaskThread&amp;quot;); …
+    }
+       
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaUseQuietReferenceNotation" defaultSeverity="MAJOR" displayName="后台输送给页面的变量必须加感叹号，${var}——中间加感叹号！。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;后台输送给页面的变量必须加感叹号，${var}——中间加感叹号！。&lt;br&gt;说明：如果var=null或者不存在，那么${var}会直接显示在页面上。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;    &amp;lt;input type=&amp;quot;text&amp;quot; name=&amp;quot;email&amp;quot; value=&amp;quot;$!email&amp;quot;/&amp;gt;
+    &amp;lt;input type=&amp;quot;text&amp;quot; name=&amp;quot;email&amp;quot; value=&amp;quot;$!{email}&amp;quot;/&amp;gt;
+
+      &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaClassCastExceptionWithSubListToArrayList" defaultSeverity="CRITICAL" displayName="ArrayList的subList结果不可强转成ArrayList，否则会抛出ClassCastException异常。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;ArrayList的subList结果不可强转成ArrayList，否则会抛出ClassCastException异常。&lt;br&gt;说明:禁止强转，如果需要用到集合特性方法，请新建一个集合，然后置入sublist,new 集合(sublist结果)。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+   List&amp;lt;String&amp;gt; list = new ArrayList&amp;lt;String&amp;gt;();
+   list.add(&amp;quot;22&amp;quot;);
+   //warn
+   List&amp;lt;String&amp;gt; test = (ArrayList&amp;lt;String&amp;gt;) list.subList(0, 1);
+         
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example:
+   List&amp;lt;String&amp;gt; list2 = new ArrayList&amp;lt;String&amp;gt;(list.subList(0, 1));
+         
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AliEqualsAvoidNull" defaultSeverity="CRITICAL" displayName="Object的equals方法容易抛空指针异常，应使用常量或确定有值的对象来调用equals。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;Object的equals方法容易抛空指针异常，应使用常量或确定有值的对象来调用equals。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public void f(String str){
+        String inner = &amp;quot;hi&amp;quot;;
+        if (inner.equals(str)) {
+            System.out.println(&amp;quot;hello world&amp;quot;);
+        }
+    }
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaLowerCamelCaseVariableNaming" defaultSeverity="CRITICAL" displayName="方法名、参数名、成员变量、局部变量都统一使用lowerCamelCase，必须遵从驼峰形式" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;方法名、参数名、成员变量、局部变量都统一使用lowerCamelCase，必须遵从驼峰形式&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaIbatisMethodQueryForList" defaultSeverity="MAJOR" displayName="iBATIS自带的queryForList(String statementName,int start,int size)不推荐使用" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;iBATIS自带的queryForList(String statementName,int start,int size)不推荐使用&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AliControlFlowStatementWithoutBraces" defaultSeverity="BLOCKER" displayName="在if/else/for/while/do语句中必须使用大括号，即使只有一行代码，避免使用下面的形式：if (condition) statements;" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;在if/else/for/while/do语句中必须使用大括号，即使只有一行代码，避免使用下面的形式：if (condition) statements;&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    if (flag) {
+            System.out.println(&amp;quot;hello world&amp;quot;);
+    }
+			
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaTransactionMustHaveRollback" defaultSeverity="MAJOR" displayName="事务场景中，抛出异常被catch后，如果需要回滚，一定要手动回滚事务。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;事务场景中，抛出异常被catch后，如果需要回滚，一定要手动回滚事务。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Positive example 1：
+    /**
+     * @author caikang
+     * @date 2017/04/07
+     */
+    @Service
+    @Transactional(rollbackFor = Exception.class)
+    public class UserServiceImpl implements UserService {
+        @Override
+        public void save(User user) {
+            //some code
+            //db operation
+        }
+    }
+        
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example 2：
+    /**
+     * @author caikang
+     * @date 2017/04/07
+     */
+    @Service
+    public class UserServiceImpl implements UserService {
+        @Override
+        @Transactional(rollbackFor = Exception.class)
+        public void save(User user) {
+            //some code
+            //db operation
+        }
+    }
+        
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example 3：
+    /**
+     * @author caikang
+     * @date 2017/04/07
+     */
+    @Service
+    public class UserServiceImpl implements UserService {
+        @Autowired
+        private DataSourceTransactionManager transactionManager;
+
+        @Override
+        @Transactional
+        public void save(User user) {
+            DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+            // explicitly setting the transaction name is something that can only be done programmatically
+            def.setName(&amp;quot;SomeTxName&amp;quot;);
+            def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+
+            TransactionStatus status = transactionManager.getTransaction(def);
+            try {
+                // execute your business logic here
+                //db operation
+            } catch (Exception ex) {
+                transactionManager.rollback(status);
+                throw ex;
+            }
+        }
+    }
+        
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidApacheBeanUtilsCopy" defaultSeverity="BLOCKER" displayName="避免用Apache BeanUtils进行属性的copy。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;避免用Apache BeanUtils进行属性的copy。&lt;br&gt;说明：Apache BeanUtils性能较差，可以使用其他方案比如Spring BeanUtils, Cglib BeanCopier。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;    TestObject a = new TestObject();
+    TestObject b = new TestObject();
+    a.setX(b.getX());
+    a.setY(b.getY());
+
+      &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaUnsupportedExceptionWithModifyAsList" defaultSeverity="CRITICAL" displayName="使用工具类Arrays.asList()把数组转换成集合时，不能使用其修改集合相关的方法，它的add/remove/clear方法会抛出UnsupportedOperationException异常。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;使用工具类Arrays.asList()把数组转换成集合时，不能使用其修改集合相关的方法，它的add/remove/clear方法会抛出UnsupportedOperationException异常。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Positive example:
+   List&amp;lt;String&amp;gt; t   = Arrays.asList(&amp;quot;a&amp;quot;,&amp;quot;b&amp;quot;,&amp;quot;c&amp;quot;);
+   //warn
+   t.add(&amp;quot;22&amp;quot;);
+   //warn
+   t.remove(&amp;quot;22&amp;quot;);
+   //warn
+   t.clear();
+         
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaUseRightCaseForDateFormat" defaultSeverity="CRITICAL" displayName="日期格式化字符串[%s]使用错误，应注意使用小写‘y’表示当天所在的年，大写‘Y’代表week in which year。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;日期格式化字符串[%s]使用错误，应注意使用小写‘y’表示当天所在的年，大写‘Y’代表week in which year。&lt;br&gt;日期格式化时，yyyy表示当天所在的年，而大写的YYYY代表是week in which year（JDK7之后引入的概念），意思是当天所在的周属于的年份，一周从周日开始，周六结束，只要本周跨年，返回的YYYY就是下一年。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+Negative example:
+    SimpleDateFormat format = new SimpleDateFormat(&amp;quot;yyyy-mm-dd HH:mm:ss&amp;quot;);
+ 
+        &lt;/pre&gt;
+&lt;pre&gt;            
+Positive example:
+        SimpleDateFormat format = new SimpleDateFormat(&amp;quot;YYYY-MM-dd HH:mm:ss&amp;quot;);
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaConstantFieldShouldBeUpperCase" defaultSeverity="CRITICAL" displayName="常量命名应该全部大写，单词间用下划线隔开，力求语义表达完整清楚，不要嫌名字长" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;常量命名应该全部大写，单词间用下划线隔开，力求语义表达完整清楚，不要嫌名字长&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    public class ConstantNameDemo {
+
+    /**
+    * max stock count
+    */
+    public static final Long MAX_STOCK_COUNT = 50000L;
+            
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaSwitchExpression" defaultSeverity="CRITICAL" displayName="在一个switch表达式内，必须包含一个default语句并且放在最后，即使它什么代码也没有。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;在一个switch表达式内，必须包含一个default语句并且放在最后，即使它什么代码也没有。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;            
+    int b = switch (x) {
+        case 1 -&amp;gt; 4;
+        case 2 -&amp;gt; 5;
+        default -&amp;gt; 6;
+    }
+			
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaAvoidCommentBehindStatement" defaultSeverity="MAJOR" displayName="方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。&lt;br&gt;&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;    public void method() {
+        // Put single line comment above code. (Note: align &amp;#39;//&amp;#39; comment with code)
+        int a = 3;
+    
+        /**
+        * Some description about follow code. (Note: align &amp;#39;/**&amp;#39; comment with code)
+        */
+        int b = 4;
+    }
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection><inspection shortName="AlibabaClassMustHaveAuthor" defaultSeverity="MAJOR" displayName="所有的类都必须添加创建者信息。" enabled="true" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;span style="color:orange"&gt;
+    &lt;pre&gt;所有的类都必须添加创建者信息。&lt;br&gt;说明：在设置模板时，注意IDEA的@author为${USER}，而eclipse的@author为${user}，大小写有区别，而日期的设置统一为yyyy/MM/dd的格式。&lt;/pre&gt;
+&lt;/span&gt;
+&lt;pre&gt;    /**
+     * Demo class
+     * 
+     * @author keriezhang
+     * @date 2016/10/31
+     */
+    public class CodeNoteDemo {
+    }
+
+        &lt;/pre&gt;
+&lt;!-- tooltip end --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</inspection></group></inspections>

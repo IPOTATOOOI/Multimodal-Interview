@@ -1,0 +1,145 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/config/JwtInterceptor.java</file>
+  <line>43</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.config</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/config/JwtInterceptor.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 43)</description>
+  <highlighted_element>return false; // 终止请求，不进入后续接口</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>41</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/config/JwtInterceptor.java</file>
+  <line>59</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.config</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/config/JwtInterceptor.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 59)</description>
+  <highlighted_element>request.setAttribute(&quot;currentUsername&quot;, username); // 存入request，接口中可通过request.getAttribute获取</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>104</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/config/JwtUtil.java</file>
+  <line>28</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.config</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/config/JwtUtil.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 28)</description>
+  <highlighted_element>.signWith(secretKey, SignatureAlgorithm.HS512) // 使用SecretKey</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>78</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/dto/history/ImportHistoryDTO.java</file>
+  <line>10</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.dto.history</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/dto/history/ImportHistoryDTO.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 10)</description>
+  <highlighted_element>private Integer userId; // 改为Integer类型以匹配数据库实际结构</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>53</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/dto/history/QADTO.java</file>
+  <line>12</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.dto.history</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/dto/history/QADTO.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 12)</description>
+  <highlighted_element>private Integer role; // 0 = 问题，1 = 回答</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>42</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/dto/history/QADTO.java</file>
+  <line>23</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.dto.history</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/dto/history/QADTO.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 23)</description>
+  <highlighted_element>private String audioFile; // 录音文件路径</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>39</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/entity/User.java</file>
+  <line>23</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.entity</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/entity/User.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 23)</description>
+  <highlighted_element>private Integer gender; // 1-男, 2-女, 0-未知</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>45</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/service/Impl/ExcelServiceImpl.java</file>
+  <line>99</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.service.Impl</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/service/Impl/ExcelServiceImpl.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 99)</description>
+  <highlighted_element>historyDTO.setCreatedAt(new Date()); // 设置创建时间</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>62</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/service/Impl/ExcelServiceImpl.java</file>
+  <line>103</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.service.Impl</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/service/Impl/ExcelServiceImpl.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 103)</description>
+  <highlighted_element>historyDTO.setUserId(1); // 使用默认用户ID 1</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>54</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/service/JwtAuthenticationToken.java</file>
+  <line>21</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.service</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/service/JwtAuthenticationToken.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 21)</description>
+  <highlighted_element>super.setAuthenticated(true); // 更新为调用父类方法</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>50</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/service/history/AudioFileService.java</file>
+  <line>25</line>
+  <module>Spr_swcup</module>
+  <package>com.example.spr_swcup.service.history</package>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/src/main/java/com/example/spr_swcup/service/history/AudioFileService.java" />
+  <problem_class id="AlibabaAvoidCommentBehindStatement" severity="MAJOR" attribute_key="INFO_ATTRIBUTES">方法内部单行注释，在被注释语句上方另起一行，使用//注释。方法内部多行注释使用/* */注释。注意与代码对齐。</problem_class>
+  <description>请不要使用行尾注释 (line 25)</description>
+  <highlighted_element>int number = i + 2; // 顺序号，从2开始</highlighted_element>
+  <language>JAVA</language>
+  <offset>0</offset>
+  <length>43</length>
+</problem>
+</problems>
